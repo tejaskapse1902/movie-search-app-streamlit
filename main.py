@@ -1,15 +1,29 @@
 import requests
 import streamlit as st
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import os
 
+# MUST be the first Streamlit command
+st.set_page_config(page_title="Movie Search App", page_icon="🎬", layout="centered")
+
+# Load environment variables (local safe)
 load_dotenv()
 
-API_KEY = os.getenv("OMDB_API_KEY") 
+# Read API key safely (Cloud + Local)
 BASE_URL = "http://www.omdbapi.com/"
 
+try:
+    API_KEY = st.secrets["OMDB_API_KEY"]
+    BASE_URL = st.secrets.get("BASE_URL", BASE_URL)
+except FileNotFoundError:
+    API_KEY = os.getenv("OMDB_API_KEY") 
+    BASE_URL = os.getenv("BASE_URL", BASE_URL)
+
+# Stop app if API key is missing
+
 if not API_KEY:
-    raise Exception("API_KEY not found. Please set it in .env file.")
+    st.error("API key not configured. Please set API_KEY.")
+    st.stop()
 
 def get_movie_details(movie:str):
     
@@ -40,7 +54,6 @@ def get_movie_details(movie:str):
     return movie_info, None
     
 def menu():
-    st.set_page_config(page_title="Movie Search App", page_icon="🎬", layout="centered")
 
     # Basic custom styling for card
     st.markdown("""
